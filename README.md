@@ -1,5 +1,5 @@
 
-WARNING: this template is still under development and things might change every so often.
+WARNING: this template is still under development and it might change every so often.
 
 jsdoc-simple
 ============
@@ -17,14 +17,15 @@ In order to use 'jsdoc-simple' you have to tell jsdoc toolkit to use it via
 the '-t' flag when calling jsdoc or prepare a jsdoc toolkit configuration file 
 with option 't:' set to the template's directory.
 
-You may want to add some static documentation to the generated documentation. To do
-so create a jsdoc toolkit configuration file and add the option 'docs:' with
-the 'content' being an array of files to add and optionally 'preprocess'.
-
-Every Entry in the 'content' array must have the fields 'src' and 'title' plus
+You also may want to add some static documentation to the generated
+documentation. To do so create a jsdoc toolkit configuration file and add the
+option 'docs:' with the field 'content' being an array of files to add and
 the optional field 'preprocess'.
 
-The 'preprocess' field gives a shell command to be execute on the 'src' file. It
+Every Entry in the 'content' array MUST define the fields 'src' and 'title' plus
+the optional field 'preprocess'.
+
+The 'preprocess' field MUST be a shell command to be execute on the 'src' file. It
 is assumed that the command will read the file's content from stdin and print
 it's outcome to stdout.
 
@@ -59,6 +60,10 @@ In the following example only the file intro.pdc is preprocessed using pandoc:
                      ]
         }
     }
+
+When using a global preprocessor for all documentations and a local one for a
+file, the latter one is chosen for that file only whereas all others are
+preprocessed using the former one.
 
 Creating the documentation then will be as easy as (with *nix shell):
 
