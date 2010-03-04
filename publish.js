@@ -14,7 +14,7 @@ function publish(symbolSet) {
 			return "&lt;"+srcFilePath+"&gt;";
 		}
 	}
-	
+
 	// create the folders and subfolders to hold the output
 	IO.mkPath((publish.conf.outDir+"symbols/src").split("/"));
 		
@@ -25,6 +25,8 @@ function publish(symbolSet) {
 	try {
 		var classTemplate = new JSDOC.JsPlate(publish.conf.templatesDir+"class.tmpl");
 		var classesTemplate = new JSDOC.JsPlate(publish.conf.templatesDir+"allclasses.tmpl");
+        var docsIndexTemplate = new JSDOC.JsPlate(publish.conf.templatesDir+"docsindex.tmpl");
+        var userDocTemplate = new JSDOC.JsPlate(publish.conf.templatesDir+"userdoc.tmpl");
 	}
 	catch(e) {
 		print("Couldn't create the required templates: "+e);
@@ -46,7 +48,7 @@ function publish(symbolSet) {
  		var srcDir = publish.conf.outDir + "symbols/src/";
 		makeSrcFile(file, srcDir);
  	}
- 	
+
  	// get a list of all the classes in the symbolset
  	var classes = symbols.filter(isaClass).sort(makeSortby("alias"));
 	
@@ -65,10 +67,41 @@ function publish(symbolSet) {
 				lcAlias+"_"+filemapCounts[lcAlias] : lcAlias;
 		}
 	}
-	
+
 	// create a class index, displayed in the left-hand column of every class page
+
 	Link.base = "../";
+    var docsConfig = JSDOC.opt.docs;
+    var hasDocsList = docsConfig && docsConfig.content instanceof Array && 
+                      docsConfig.content.length > 0;
+    var docsList = docsConfig.content;
+    if (hasDocsList) {
+        for (var i = 0; i < docsList.length; i++) {
+            docsList[i].outFile = 'userdocs/' + i + '.html';
+        }
+    }
+
+    publish.docsIndex = hasDocsList ? docsIndexTemplate.process(docsList) : "";
  	publish.classesIndex = classesTemplate.process(classes); // kept in memory
+
+    if (hasDocsList) {
+        IO.mkPath((publish.conf.outDir+'userdocs').split('/'));
+
+        for (var i = 0; i < docsList.length; i++) {
+            var content, doc = docsList[i];
+
+            if (docsConfig.preprocess || doc.preprocess) {
+                content = processWithCommand(docsConfig.preprocess || doc.preprocess, doc.src);
+            } else {
+                content = IO.readFile(doc.src);
+            }
+
+            var docText = userDocTemplate.process({ content: content
+                                                  ,  title: doc.title
+                                                  });
+            IO.saveFile(publish.conf.outDir+'userdocs/', i + '.html', docText);
+        }
+    }
 	
 	// create each of the class pages
 	for (var i = 0, l = classes.length; i < l; i++) {
@@ -85,6 +118,7 @@ function publish(symbolSet) {
 	
 	// regenerate the index with different relative links, used in the index pages
 	Link.base = "";
+    publish.docsIndex    = hasDocsList ? docsIndexTemplate.process(docsList) : "";
 	publish.classesIndex = classesTemplate.process(classes);
 	
 	// create the class index page
@@ -204,3 +238,47 @@ function resolveLinks(str, from) {
 	
 	return str;
 }
+
+function processWithCommand(cmd, file) {
+    var process, line, content = IO.readFile(file);
+
+    if(!content){
+        LOG.warn('could not read file: ' + file);
+        quit();
+        return null;
+    }
+
+    process = Packages.java.lang.Runtime.getRuntime().exec(cmd);
+    if(!process) {
+        LOG.warn('unable to execute command: ' + cmd);
+        quit();
+        return null;
+    }
+
+    var textIn = new Packages.java.io.BufferedReader(
+        new Packages.java.io.InputStreamReader(
+            process.getInputStream()));
+
+    var textOut = new Packages.java.io.PrintWriter(
+        new Packages.java.io.BufferedWriter(
+            new Packages.java.io.OutputStreamWriter(
+                process.getOutputStream())));
+
+    textOut.print(content);
+    textOut.close();
+
+    content = "";
+    while ((line = textIn.readLine())) {
+        content += line;
+    }
+    textIn.close();
+
+    process.waitFor();
+    if(process.exitValue() != 0) {
+        quit();
+        return null;
+    }
+
+    return content;
+}
+
