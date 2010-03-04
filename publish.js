@@ -72,9 +72,10 @@ function publish(symbolSet) {
 
 	Link.base = "../";
     var docsConfig = JSDOC.opt.docs;
-    var hasDocsList = docsConfig && docsConfig.content instanceof Array && 
+    var hasDocsList = docsConfig !== undefined && docsConfig !== null && 
+                      docsConfig.content instanceof Array && 
                       docsConfig.content.length > 0;
-    var docsList = docsConfig.content;
+    var docsList = hasDocsList ? docsConfig.content : null;
     if (hasDocsList) {
         for (var i = 0; i < docsList.length; i++) {
             docsList[i].outFile = 'userdocs/' + i + '.html';
@@ -90,7 +91,7 @@ function publish(symbolSet) {
         for (var i = 0; i < docsList.length; i++) {
             var content, doc = docsList[i];
 
-            if (docsConfig.preprocess || doc.preprocess) {
+            if (doc.preprocess || docsConfig.preprocess) {
                 content = processWithCommand(docsConfig.preprocess || doc.preprocess, doc.src);
             } else {
                 content = IO.readFile(doc.src);
