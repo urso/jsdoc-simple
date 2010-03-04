@@ -1,4 +1,6 @@
 
+WARNING: this template is still under development and things might change every so often.
+
 jsdoc-simple
 ============
 
