@@ -121,6 +121,7 @@ function publish(symbolSet) {
 	Link.base = "";
     publish.docsIndex    = hasDocsList ? docsIndexTemplate.process(docsList) : "";
 	publish.classesIndex = classesTemplate.process(classes);
+
 	
 	// create the class index page
 	try {
@@ -130,6 +131,15 @@ function publish(symbolSet) {
 	
 	var classesIndex = classesindexTemplate.process(classes);
 	IO.saveFile(publish.conf.outDir, "index"+publish.conf.ext, classesIndex);
+
+    try {
+        var symbolIndexTemplate = new JSDOC.JsPlate(publish.conf.templatesDir+'symbolindex.tmpl');
+    } catch(e) { print(e.message); quit(); }
+
+    var symbolIndex = symbolIndexTemplate.process(buildSymbolList(classes));
+    IO.saveFile(publish.conf.outDir, 'symbolindex'+publish.conf.ext, symbolIndex);
+
+    symbolIndex = symbolIndexTemplate = null;
 	classesindexTemplate = classesIndex = classes = null;
 	
 	// create the file index page
@@ -283,3 +293,49 @@ function processWithCommand(cmd, file) {
     return content;
 }
 
+function buildSymbolList(classes) {
+    var clazz, i,
+        tmp = {},
+        ret = [];
+
+    function addSymbol(s) {
+        var n = '=' + s.name;
+        if (!tmp[n]) {
+            tmp[n] = { name: s.name,
+                       symbols: [s] };
+        } else {
+            tmp[n].symbols.push(s);
+        }
+    }
+
+    function addMembers(c, lst) {
+        if(lst){
+            lst.filter(function(x){
+                return x.memberOf == c.alias && !x.isNamespace || !x.isIgnored;
+            }).forEach(addSymbol);
+        }
+    }
+
+    for (i = 0; i < classes.length; i++) {
+        clazz = classes[i];
+        if(clazz.name !== '_global_') {
+            switch(clazz.isa) {
+                case 'OBJECT':
+                case 'CONSTRUCTOR':
+                    addSymbol(clazz);
+            }
+        }
+
+        addMembers(clazz, clazz.properties);
+        addMembers(clazz, clazz.methods);
+        addMembers(clazz, clazz.events);
+    }
+
+    for (i in tmp) {
+        ret.push(tmp[i]);
+    }
+
+    ret.sort(makeSortby('name'));
+
+    return ret;
+}
