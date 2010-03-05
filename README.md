@@ -69,3 +69,13 @@ Creating the documentation then will be as easy as (with *nix shell):
 
     $ run.sh -c='jsdoc.conf' -t="$JSDOCDIR/templates/jsdoc-simple" src
 
+## Using the Symbol Index ##
+
+The Symbol index page features a text field used for filtering. For filtering
+the content of this text field is used as a regular expression. Thus typing the
+expression "a|b|c" will find all symbols starting with a or b or c.
+Furthermore the regular expressions are case insensitive. But if you have symbol
+names using special characters like '$' proper escaping is needed. Meaning
+that if you want to filter all symbols starting with '$' you have to type
+"\$".
+
