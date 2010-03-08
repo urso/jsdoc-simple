@@ -1,3 +1,4 @@
+
 /** Called automatically by JsDoc Toolkit. */
 function publish(symbolSet) {
 	publish.conf = {  // trailing slash expected for dirs
@@ -7,6 +8,10 @@ function publish(symbolSet) {
 		symbolsDir:  "symbols/",
 		srcDir:      "symbols/src/"
 	};
+
+    load(publish.conf.templatesDir+'js/mootools-1.2.4-core-server.js');
+    load(publish.conf.templatesDir+'js/htmlparser.js');
+    load(publish.conf.templatesDir+'js/jsdom.js');
 	
 	// is source output is suppressed, just display the links to the source file
 	if (JSDOC.opt.s && defined(Link) && Link.prototype._makeSrcLink) {
@@ -52,7 +57,8 @@ function publish(symbolSet) {
  	// get a list of all the classes in the symbolset
  	var classes = symbols.filter(isaClass).sort(makeSortby("alias"));
 	
-	// create a filemap in which outfiles must be to be named uniquely, ignoring case
+    // create a filemap in which outfiles must be to be named uniquely,
+    // ignoring case
 	if (JSDOC.opt.u) {
 		var filemapCounts = {};
 		Link.filemap = {};
@@ -68,7 +74,8 @@ function publish(symbolSet) {
 		}
 	}
 
-	// create a class index, displayed in the left-hand column of every class page
+    // create a class index, displayed in the left-hand column of every class
+    // page
 
 	Link.base = "../";
     var docsConfig = JSDOC.opt.docs;
@@ -85,22 +92,74 @@ function publish(symbolSet) {
     publish.docsIndex = hasDocsList ? docsIndexTemplate.process(docsList) : "";
  	publish.classesIndex = classesTemplate.process(classes); // kept in memory
 
+    // copy resources
+    var stdResources = copyResources(publish.conf.outDir+'userdocs/', 
+                                  (!docsConfig && !docsConfig.resources) ? 
+                                      null : 
+                                      docsConfig.resources);
+    //var stdResources = {};
+    var dynResources = {};
+
     if (hasDocsList) {
         IO.mkPath((publish.conf.outDir+'userdocs').split('/'));
 
         for (var i = 0; i < docsList.length; i++) {
-            var content, doc = docsList[i];
+            var content, header = "", doc = docsList[i];
 
             if (doc.preprocess || docsConfig.preprocess) {
-                content = processWithCommand(docsConfig.preprocess || doc.preprocess, doc.src);
+                content = processWithCommand(docsConfig.preprocess || 
+                                             doc.preprocess, doc.src);
             } else {
                 content = IO.readFile(doc.src);
+                var absPath = new Packages.java.io.File(doc.src).
+                              getAbsolutePath();
+
+                stdResources['=' + absPath] = doc.outFile;
+            }
+
+            var docDOM = parseDom(content).filter(function(d){
+                return d instanceof DomText ? d.innerText == true : true;
+            });
+
+            if (docDOM.length === 1 && 
+                docDOM[0].tagName.toLowerCase() === 'html')
+            {
+                content = docDOM[0].getElement('body').innerHTML;
+                header = docDOM[0].getElement('head') || null;
+                if (header) {
+                    header.getElements("script").forEach(function (node){
+                        if( node.getAttribute('src') &&
+                            !isURL(node.getAttribute('src'))) 
+                        {
+                            var src = addResource(publish.conf,
+                                                  doc, 
+                                                  stdResources,
+                                                  dynResources,
+                                                  node.getAttribute('src'));
+                            node.setAttribute('src', src);
+                        }
+                    });
+                    header.getElements("link").forEach(function (node) {
+                        if (!isURL(node.getAttribute('href'))) {
+                            var src = addResource(publish.conf,
+                                                  doc,
+                                                  stdResources,
+                                                  dynResources,
+                                                  node.getAttribute('href'));
+                            node.setAttribute('href', src);
+                        }
+                    });
+                }
+                header = header.innerHTML || "";
             }
 
             var docText = userDocTemplate.process({ content: content
-                                                  ,  title: doc.title
+                                                  , header: header
+                                                  , title: doc.title
                                                   });
-            IO.saveFile(publish.conf.outDir+'userdocs/', i + '.html', docText);
+
+            IO.saveFile(publish.conf.outDir+'userdocs/', 
+                        i + '.html', docText);
         }
     }
 	
@@ -114,15 +173,21 @@ function publish(symbolSet) {
 		var output = "";
 		output = classTemplate.process(symbol);
 		
-		IO.saveFile(publish.conf.outDir+"symbols/", ((JSDOC.opt.u)? Link.filemap[symbol.alias] : symbol.alias) + publish.conf.ext, output);
+		IO.saveFile(publish.conf.outDir+"symbols/", 
+                    ((JSDOC.opt.u)? Link.filemap[symbol.alias] : 
+                                    symbol.alias) + 
+                    publish.conf.ext, output);
 	}
 	
-	// regenerate the index with different relative links, used in the index pages
+    // regenerate the index with different relative links, used in the index
+    // pages
 	Link.base = "";
-    publish.docsIndex    = hasDocsList ? docsIndexTemplate.process(docsList) : "";
+    publish.docsIndex    = hasDocsList ? 
+                               docsIndexTemplate.process(docsList) : 
+                               "";
+
 	publish.classesIndex = classesTemplate.process(classes);
 
-	
 	// create the class index page
 	try {
 		var classesindexTemplate = new JSDOC.JsPlate(publish.conf.templatesDir+"index.tmpl");
@@ -175,7 +240,9 @@ function publish(symbolSet) {
 }
 
 
-/** Just the first sentence (up to a full stop). Should not break on dotted variable names. */
+/** Just the first sentence (up to a full stop). Should not break on dotted
+ *  variable names. 
+ */
 function summarize(desc) {
 	if (typeof desc != "undefined")
 		return desc.match(/([\w\W]+?\.)[^a-z0-9_$]/i)? RegExp.$1 : desc;
@@ -339,3 +406,97 @@ function buildSymbolList(classes) {
 
     return ret;
 }
+
+function copyDirectory(todir, fromdir) {
+    var dir = new Packages.java.io.File(fromdir);
+    var m = {};
+
+    dir.listFiles().forEach(function(f){
+        if (f.isFile()) {
+            IO.copyFile(f, todir, f.getName());
+            m['=' + f.getAbsolutePath()] = todir+f.getName();
+        } else if (f.isDirectory()) {
+            IO.mkPath(todir+f.getName());
+            var tmp = copyDirectory(todir+f.getName()+'/', f);
+            for(var i in tmp) {
+                m[i] = tmp[i];
+            }
+        }
+    });
+    return m;
+}
+
+function copyResources(todir, resources) {
+    var m = {};
+    if (resources && resources instanceof Array) {
+        resources.forEach(function (r) {
+            var files, f = new Packages.java.io.File(r);
+
+            if (f.isFile()) {
+                IO.copyFile( f.getAbsolutePath(), todir, f.getName() );
+                m['=' + f.getAbsolutePath()] = 
+                    new Packages.java.io.File(todir+f.getName()).
+                        getAbsolutePath();
+            } else if (f.isDirectory()) {
+                IO.mkPath(todir+f.getName());
+                var tmp = copyDirectory(todir+f.getName()+'/', 
+                                        f.getAbsolutePath());
+                for(var i in tmp) {
+                    m[i] = tmp[i];
+                }
+            }
+        });
+    }
+    return m;
+}
+
+function isURL(str) {
+    return /^http:\/\//.test(str);
+}
+
+function findRelativePath(from, to) {
+    var fTo   = new Packages.java.io.File(to).getAbsoluteFile();
+    var fFrom = new Packages.java.io.File(from).getAbsoluteFile();
+    if(!fFrom.isDirectory())  fFrom = fFrom.getParentFile();
+
+    var aFrom = String(fFrom.getAbsolutePath()).split(/[\\\/]/);
+    var aTo   = String(fTo.getAbsolutePath()).split(/[\\\/]/);
+
+    while(aFrom.length && aTo.length && aFrom[0] == aTo[0]) {
+        aFrom.shift();
+        aTo.shift();
+    }
+
+    var path = aFrom.map(function(){ return "..";}).join('/');
+    if(aFrom.length > 0) path += '/';
+    path += aTo.join('/');
+    return path;
+}
+
+function addResource(conf, forDoc, staticResources, dynResources, res) {
+    var f = new Packages.java.io.File(forDoc.src);
+    var docDir = f.isDirectory() ? 
+                    f.getAbsolutePath() : 
+                    f.getAbsoluteFile().getParent();
+    var resource = String(new Packages.java.io.File(docDir, res).
+                          getCanonicalPath());
+    var staticRes = staticResources['=' + resource];
+
+    if (staticRes) {
+        return findRelativePath( conf.outDir+forDoc.outFile, staticRes);
+    }
+
+    var dynRes    = dynResources['=' + resource];
+    if (dynRes) {
+        return findRelativePath( conf.outDir+forDoc.outFile, dynRes);
+    }
+
+    //copy resource file
+    var fileName = FilePath.fileName(resource);
+    IO.copyFile(resource, conf.outDir+'userdocs/', fileName);
+    var dynRes = conf.outDir+'userdocs/'+fileName;
+    dynResources['=' + resource] = dynRes;
+
+    return findRelativePath(conf.outDir+forDoc.outFile, dynRes);
+}
+
