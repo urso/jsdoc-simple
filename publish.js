@@ -117,9 +117,13 @@ function publish(symbolSet) {
                 stdResources['=' + absPath] = doc.outFile;
             }
 
-            var docDOM = parseDom(content).filter(function(d){
+            var docDOM = parseDom(content);
+            
+            if (docDOM instanceof Array) {
+            docDOM = docDOM.filter(function(d){
                 return d instanceof DomText ? d.innerText == true : true;
             });
+            }
 
             if (docDOM.length === 1 && 
                 docDOM[0].tagName.toLowerCase() === 'html')

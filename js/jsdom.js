@@ -1,14 +1,32 @@
 
+/*
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ * 
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+ * License for the specific language governing rights and limitations
+ * under the License.
+ * 
+ * The Initial Developer of the Original Code is Steffen Siering. All Rights Reserved.
+ */
+
 (function() {
 
-    function $id(x) {
-        return x;
-    }
-
+    /** @scope _global_ */
+    /**
+     * Abstract class for more specific DOM-Node classes.
+     *
+     * @class
+     */
     function DomAbstract(){ return this; }
+
     this.DomAbstract = DomAbstract; // export DomAbstract
 
     DomAbstract.constructor = DomAbstract;
+    /** @function */
     DomAbstract.prototype.__doGetElementsBy = function(){return []};
     DomAbstract.prototype.getElementsByTagName = function(){ return []; };
     DomAbstract.prototype.getElementById = function(){ return null; };
@@ -49,6 +67,12 @@
         this.setOuterHTML(x); 
     });
 
+    /** @scope _global_ */
+    /**
+     * DOM Element Node.
+     *
+     * @class
+     */
     function DomElement(parent, tag, attrs) {
         this.nodeType = 1;
         this.initialized = false;
@@ -194,7 +218,7 @@
                              children;
                 }).each( function(elemSubs){
                     if(elemSubs && elemSubs.length>0)
-                        ret = ret.concat(elemSubs.filter($id));
+                        ret = ret.concat(elemSubs.filter(function(x){return x}));
                 });
         return (!ret || ret.length == 0) ? null : ret;
     };
@@ -289,39 +313,37 @@
             return this.className.contains(className, ' ');
         }
     ;
-    DomElement.prototype.addClass = $defined(this['Element']) ? 
-        Element.prototype.addClass :
-        function(className) {
-            if (!this.hasClass(className)) {
-                this.className = (this.className + ' ' + className).clean();
-            }
-            return this;
-        }
-    ;
-    DomElement.prototype.removeClass = $defined(this['Element']) ? 
-        Element.prototype.removeClass :
-        function(className) {
-            var regex = new RegExp('(^|\\s)' + className + '(?:\\s|$)');
-            this.className = this.className.replace(regex, '$1');
-            return this;
-        }
-    ;
-    DomElement.prototype.toggleClass = $defined(this['Element']) ? 
-        Element.prototype.toggleClass :
-        function(className) {
-            return this.hasClass(className) ? 
-                     this.removeClass(className) : 
-                     this.addClass(className);
-        }
-    ;
 
-    DomElement.prototype.get = $defined(this['Element']) ? 
-                                 Element.prototype.get : 
-                                 undefined;
+    if ($defined(this['Element'])) {
+        DomElement.prototype.get = $defined(this['Element']) ? 
+                                    Element.prototype.get : 
+                                    undefined;
 
-    DomElement.prototype.set = $defined(this['Element']) ? 
-                                 Element.prototype.set : 
-                                 undefined;
+        DomElement.prototype.set = $defined(this['Element']) ? 
+                                    Element.prototype.set : 
+                                    undefined;
+    }
+
+    DomElement.prototype.addClass = function(className) {
+        if (!this.hasClass(className)) {
+            this.className = (this.className + ' ' + className).clean();
+        }
+        return this;
+    };
+
+    DomElement.prototype.removeClass = function(className) {
+        var regex = new RegExp('(^|\\s)' + className + '(?:\\s|$)');
+        this.className = this.className.replace(regex, '$1');
+        return this;
+    };
+
+    DomElement.prototype.toggleClass = function(className) {
+        return this.hasClass(className) ? 
+            this.removeClass(className) : 
+                this.addClass(className);
+    };
+
+
 
     DomElement.prototype.getInnerHTML = function(){
         if(!this.initialized) return "";
@@ -365,6 +387,11 @@
         throw 'property outerHTML is read only';
     };
 
+    /**
+     * DOM Text Node.
+     *
+     * @class
+     */
     function DomText(text) {
         this.nodeType = 3;
 
@@ -373,6 +400,7 @@
 
         return this;
     }
+
     this.DomText = DomText; //export class DomText
 
     DomText.constructor = DomText;
@@ -434,6 +462,13 @@
         last.nextSibling = null;
     }
 
+    /**
+     * parses DOM structure from given text.
+     *
+     * @param {String} text HTML-String to parse
+     *
+     * @return DOM Tree Root Node, or if no specific root an Array of DOM Nodes.
+     */
     function parseDom(text) {
         var stack = [];
         var elem = null;
@@ -464,8 +499,8 @@
                 (elem ? elem.childNodes : roots).push(new DomText(text));
             }
         });
-        
-        return roots;
+
+        return roots.length == 1 ? roots[0] : roots;
     }
     this.parseDom = parseDom;
 
