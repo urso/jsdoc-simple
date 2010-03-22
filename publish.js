@@ -348,6 +348,7 @@ function processWithCommand(cmd, file) {
     content = "";
     while ((line = textIn.readLine())) {
         content += line;
+        content += "\n";
     }
     textIn.close();
 
