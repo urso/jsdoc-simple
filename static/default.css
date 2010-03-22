@@ -224,6 +224,14 @@ ul.inheritsList
 	font-style: italic;
 }
 
+code {
+    display: block;
+    margin: 1em;
+    border: 1px solid #aaa;
+    padding: 1em;
+    background: #f8f8ff;
+}
+
 .fineprint
 {
 	text-align: right;
