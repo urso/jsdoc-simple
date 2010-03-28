@@ -126,16 +126,15 @@ function publish(symbolSet) {
             var docDOM = parseDom(content);
             
             if (docDOM instanceof Array) {
-            docDOM = docDOM.filter(function(d){
-                return d instanceof DomText ? d.innerText == true : true;
-            });
+                docDOM = docDOM.filter(function(d){
+                    return d instanceof DomText ? d.innerText == true : true;
+                });
             }
 
-            if (docDOM.length === 1 && 
-                docDOM[0].tagName.toLowerCase() === 'html')
+            if (!(docDOM instanceof Array) && docDOM.tagName.toLowerCase() === 'html')
             {
-                content = docDOM[0].getElement('body').innerHTML;
-                header = docDOM[0].getElement('head') || null;
+                content = docDOM.getElement('body').innerHTML;
+                header = docDOM.getElement('head') || null;
                 if (header) {
                     header.getElements("script").forEach(function (node){
                         if( node.getAttribute('src') &&
