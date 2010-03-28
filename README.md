@@ -115,6 +115,9 @@ will be copied then into the final output, such that your examples will still
 work and the whole documentation is self contained and can be redistributed
 without the original sources.
 
+Furthermore if a markdown file is given (any file ending with .mk or .markdown)
+but no preprocessor, the file is automatically converted to html.
+
 ## Using the Symbol Index ##
 
 The Symbol index page features a text field used for filtering. When filtering
@@ -132,10 +135,12 @@ you have to type "\$".
   Original code by Erik Arvidsson, Mozilla Public License
   http://erik.eae.net/simplehtmlparser/simplehtmlparser.js
 
-- MooTools 1.2.4 Server:
-  authors: The MooTools production team ( http://mootools.net/developers/ )
+- [MooTools 1.2.4 Server](http://mootools.net/developers/):
+  authors: The MooTools production team 
 
-- JSDom:
-  JavaScript DOM duck typing classes for non browser environments (soon to be
-  released)
+- [JSDom](http://github.com/urso/jsdom):
+  JavaScript DOM duck typing classes for non browser environments
+
+- [Showdown](http://attacklab.net/showdown/):
+  Markdown for JavaScript 
 
