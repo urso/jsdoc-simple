@@ -12,6 +12,8 @@ function publish(symbolSet) {
     load(publish.conf.templatesDir+'js/mootools-1.2.4-core-server.js');
     load(publish.conf.templatesDir+'js/htmlparser.js');
     load(publish.conf.templatesDir+'js/jsdom.js');
+    load(publish.conf.templatesDir+'js/showdown.js');
+    markdownConverter = new Showdown.converter();
 	
 	// is source output is suppressed, just display the links to the source file
 	if (JSDOC.opt.s && defined(Link) && Link.prototype._makeSrcLink) {
@@ -111,6 +113,10 @@ function publish(symbolSet) {
                                              doc.preprocess, doc.src);
             } else {
                 content = IO.readFile(doc.src);
+                ext = FilePath.fileExtension(doc.src);
+                if (ext === 'markdown' || ext === 'md') {
+                    content = markdownConverter.makeHtml(content);
+                }
                 var absPath = new Packages.java.io.File(doc.src).
                               getAbsolutePath();
 
