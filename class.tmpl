@@ -229,7 +229,7 @@
 				</div>
 				
 				<div class="description">
-					{+resolveLinks(data.desc)+}
+					{+markdownConverter.makeHtml(resolveLinks(data.desc))+}
 					<if test="data.author"><br /><i>Author: </i>{+data.author+}.</if>
 				</div>
 				
@@ -328,7 +328,7 @@
 					
 					</div>
 					<div class="description">
-						{+resolveLinks(member.desc)+}
+						{+markdownConverter.makeHtml(resolveLinks(member.desc))+}
 						<if test="member.srcFile != data.srcFile">
 							<br />
 							<i>Defined in: </i> {+new Link().toSrc(member.srcFile)+}.
@@ -398,7 +398,7 @@
 					
 					</div>
 					<div class="description">
-						{+resolveLinks(member.desc)+}
+						{+markdownConverter.makeHtml(resolveLinks(member.desc))+}
 						<if test="member.srcFile != data.srcFile">
 							<br />
 							<i>Defined in: </i> {+new Link().toSrc(member.srcFile)+}.
@@ -502,7 +502,7 @@
 					
 					</div>
 					<div class="description">
-						{+resolveLinks(member.desc)+}
+						{+markdownConverter.makeHtml(resolveLinks(member.desc))+}
 						<if test="member.srcFile != data.srcFile">
 							<br />
 							<i>Defined in: </i> {+new Link().toSrc(member.srcFile)+}.
