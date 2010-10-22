@@ -8,6 +8,20 @@ jsdoc-simple
 jsdoc-simple is a modified jsdoc toolkit (Version 2) template with support for
 additional documentation.
 
+## Features ##
+
+- very simple and readable layout
+- Support for additional files and resources
+- Scripts and CSS-Files in additional Resource files will be copied
+  automatically. So one can develop and test examples indiviually and easily
+  create a self contained documentation.
+- Support for Markdown Resource files
+- Markdown processing for Class-, Method-, Property-, Event-descriptions
+- Dynamically filterable(using regular expressions) symbol index
+
+An example javascript library using jsdoc-simple can be found at: 
+http://github.com/urso/qc.js
+
 ## Install ##
 
 The whole template directory must be copied as is into jsdoc's template
@@ -67,7 +81,7 @@ When using a global preprocessor for all documentations and a local one for a
 file, the latter one is chosen for that file only whereas all others are
 preprocessed using the former one.
 
-Creating the documentation then will be as easy as (with *nix shell):
+Creating the documentation then will be as easy as (with \*nix shell):
 
     $ run.sh -c='jsdoc.conf' -t="$JSDOCDIR/templates/jsdoc-simple" src
 
