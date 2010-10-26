@@ -96,7 +96,8 @@ function publish(symbolSet) {
 
     // copy resources
     var stdResources = copyResources(publish.conf.outDir+'userdocs/', 
-                                  (!docsConfig && !docsConfig.resources) ? 
+                                  ((docsConfig === null || docsConfig === undefined)
+                                    || !docsConfig.resources) ? 
                                       null : 
                                       docsConfig.resources);
     //var stdResources = {};
