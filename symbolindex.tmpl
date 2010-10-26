@@ -26,7 +26,7 @@
 
             function filterOverview() {
                 var i, name,
-                    lst = overview.getElementsByTagName('tr');
+                    lst = overview.getElementsByTagName('tr'),
                     regex = filterField.value ? ('^(' + filterField.value + ')') : '.*';
 
                 regex = new RegExp(regex, 'i');
@@ -44,7 +44,7 @@
                 overview = window.document.getElementById('symbolOverview');
                 filterField = window.document.getElementById('symbolFilter');
 
-                filterField.addEventListener('change', filterOverview);
+                filterField.addEventListener('change', filterOverview, false);
                 filterOverview();
 
                 delete init;
