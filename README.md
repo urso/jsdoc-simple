@@ -1,4 +1,3 @@
-
 WARNING: this template is still under development and it might change every so
 often.
 
@@ -19,8 +18,9 @@ additional documentation.
 - Markdown processing for Class-, Method-, Property-, Event-descriptions
 - Dynamically filterable(using regular expressions) symbol index
 
-An example javascript library using jsdoc-simple can be found at: 
-http://github.com/urso/qc.js
+An example javascript library using jsdoc-simple can be found at: [http://github.com/urso/qc.js](http://github.com/urso/qc.js)
+
+[Screenshots](http://github.com/urso/jsdoc-simple/wiki/Screenshots)
 
 ## Install ##
 
