@@ -9,14 +9,16 @@ additional documentation.
 
 ## Features ##
 
-- very simple and readable layout
-- Support for additional files and resources
-- Scripts and CSS-Files in additional Resource files will be copied
+- Very simple and readable layout.
+- Support for additional files and resources.
+- Scripts and CSS-Files in additional Resource files will be copied.
   automatically. So one can develop and test examples indiviually and easily
   create a self contained documentation.
-- Support for Markdown Resource files
-- Markdown processing for Class-, Method-, Property-, Event-descriptions
-- Dynamically filterable(using regular expressions) symbol index
+- Support for Markdown Resource files.
+- Markdown processing for Class-, Method-, Property-, Event-descriptions.
+- Dynamically filterable (using regular expressions) symbol index.
+- 'cssFile' user-defined option that allows the use of a different css file for
+  the documentation's styling.
 
 An example javascript library using jsdoc-simple can be found at: [http://github.com/urso/qc.js](http://github.com/urso/qc.js)
 
@@ -32,6 +34,8 @@ directory.
 In order to use 'jsdoc-simple' you have to tell jsdoc toolkit to use it via
 the '-t' flag when calling jsdoc or prepare a jsdoc toolkit configuration file
 with option 't:' set to the template's directory.
+
+### Static Documentation ###
 
 You also may want to add some static documentation to the generated
 documentation. To do so create a jsdoc toolkit configuration file and add the
@@ -84,6 +88,31 @@ preprocessed using the former one.
 Creating the documentation then will be as easy as (with \*nix shell):
 
     $ run.sh -c='jsdoc.conf' -t="$JSDOCDIR/templates/jsdoc-simple" src
+
+### Choosing a different default CSS file ###
+
+jsdoc-simple gives you the ability to modify the CSS file that is used to style
+the generated documentation. By default, the default.css file found within the
+static folder is used. To use a different CSS file, you MUST add the desired
+css file to the jsdoc-simple static folder and then define 'cssFile' option in
+one of two ways:
+
+On the command line:
+
+    -D="cssFile:myCssFile.css"
+
+In a conf file:
+
+    {
+        d: 'docs', // output directory 'docs'
+        a: false,  // do not show all symbols
+        D: {
+            cssFile: 'myCssFile.css'
+        }
+    }
+
+**NOTE:** The value for 'cssFile' should be given without any path prefix as
+it's value is already rooted within the static folder.
 
 ## Handling additional Resources ##
 
@@ -158,3 +187,5 @@ you have to type "\$".
 - [Showdown](http://attacklab.net/showdown/):
   Markdown for JavaScript 
 
+- [cssFile option functionality](https://github.com/cobhimself): Collin
+  Brooks
