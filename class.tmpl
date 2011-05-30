@@ -7,7 +7,7 @@
 		{! Link.base = "../"; /* all generated links will be relative to this */ !}
 		<title>JsDoc Reference - {+data.alias+}</title>
 
-        <link rel="stylesheet" href="../static/default.css" type="text/css" media="screen" charset="utf-8" />
+        <link rel="stylesheet" href="../static/{+JSDOC.opt.D.cssFile+}" type="text/css" media="screen" charset="utf-8" />
 	</head>
 
 	<body>
@@ -49,7 +49,7 @@
                  {+classType+}
              </h3>
              <ul>
-                <li {! if(data.comment.getTag("hilited").length){ output += 'style="color: red"'; }!} class="fixedFont">
+                <li {! if(data.comment.getTag("hilited").length){ output += 'style="color: red"'; }!}>
                   {+ 
                       /* new Link().toSymbol(data.alias).inner('constructor') */
                       new Link().toSymbol(data.alias).withText(data.name)
@@ -65,7 +65,7 @@
              <h3>{+ data.isNamespace ? "Variables" : "Fields" +}</h3>
              <ul>
                <for each="member" in="ownProperties">
-                 <li class="fixedFont">
+                 <li>
                    {+new Link().toSymbol(member.alias).withText(member.name)+}
                  </li>
                </for>
@@ -79,7 +79,7 @@
              <h3>{+ data.isNamespace ? "Functions" : "Methods" +}</h3>
              <ul>
                <for each="member" in="ownMethods">
-                   <li class="fixedFont">
+                   <li>
                         {+new Link().toSymbol(member.alias).withText(member.name)+}
                     </li>
                </for>
