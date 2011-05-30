@@ -94,14 +94,14 @@ Creating the documentation then will be as easy as (with \*nix shell):
 jsdoc-simple gives you the ability to modify the CSS file that is used to style
 the generated documentation. By default, the default.css file found within the
 static folder is used. To use a different CSS file, you MUST add the desired
-css file to the jsdoc-simple static folder and then define 'cssFile' option in
-one of two ways:
+css file to the jsdoc-simple static folder and then define the 'cssFile' option
+in one of two ways:
 
 On the command line:
 
-    -D="cssFile:myCssFile.css"
+    run.sh -c='jsdoc.conf' -t="$JSDOCDIR/templates/jsdoc-simple" -D="cssFile:myCssFile.css"
 
-In a conf file:
+In a configuration file:
 
     {
         d: 'docs', // output directory 'docs'
