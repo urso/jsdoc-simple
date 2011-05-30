@@ -9,13 +9,23 @@ function publish(symbolSet) {
 		srcDir:      "symbols/src/"
 	};
 
+    //Was the D option used? If not, create it so default options can be
+    //created
+    JSDOC.opt.D = JSDOC.opt.D || {};
+
+    // If the user did not specify a css file to use, define the cssFile option
+    // as the default.css file
+    if (!JSDOC.opt.D.cssFile) {
+        JSDOC.opt.D.cssFile = "default.css";
+    }
+
     load(publish.conf.templatesDir+'js/mootools-1.2.4-core-server.js');
     load(publish.conf.templatesDir+'js/htmlparser.js');
     load(publish.conf.templatesDir+'js/jsdom.js');
     load(publish.conf.templatesDir+'js/showdown.js');
     markdownConverter = new Showdown.converter();
 	
-	// is source output is suppressed, just display the links to the source file
+	// if source output is suppressed, just display the links to the source file
 	if (JSDOC.opt.s && defined(Link) && Link.prototype._makeSrcLink) {
 		Link.prototype._makeSrcLink = function(srcFilePath) {
 			return "&lt;"+srcFilePath+"&gt;";
@@ -34,8 +44,7 @@ function publish(symbolSet) {
 		var classesTemplate = new JSDOC.JsPlate(publish.conf.templatesDir+"allclasses.tmpl");
         var docsIndexTemplate = new JSDOC.JsPlate(publish.conf.templatesDir+"docsindex.tmpl");
         var userDocTemplate = new JSDOC.JsPlate(publish.conf.templatesDir+"userdoc.tmpl");
-	}
-	catch(e) {
+	} catch(e) {
 		print("Couldn't create the required templates: "+e);
 		quit();
 	}
@@ -242,11 +251,22 @@ function publish(symbolSet) {
 	IO.saveFile(publish.conf.outDir, "files"+publish.conf.ext, filesIndex);
 	fileindexTemplate = filesIndex = files = null;
 
+    // copy static files
     var staticDir = publish.conf.outDir + 'static';
 	IO.mkPath(staticDir.split('/'));
     IO.ls( publish.conf.templatesDir+'static' ).forEach(function(f){
-        IO.copyFile(f, staticDir);
+        // copy all static files unless they are .css files
+        if (f.lastIndexOf(".css") === -1) {
+            IO.copyFile(f, staticDir);
+        }
     });
+
+    try {
+        IO.copyFile(publish.conf.templatesDir + 'static/' + JSDOC.opt.D.cssFile, staticDir);
+    } catch (e) {
+        print("Could not copy CSS file because: " + e.message);
+        quit();
+    }
 }
 
 
